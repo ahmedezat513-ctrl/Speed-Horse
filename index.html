@@ -186,10 +186,10 @@ async function attach(ref,title){
   <div class="bar" style="margin-top:12px"><button class="btn" id="atb">⬆ رفع</button><button class="btn s" onclick="closeM();render()">إغلاق</button></div></div></div>`;
   const load=async()=>{try{const l=await rpc('app_file_list',{p_token:U.token,p_ref:ref});document.getElementById('atl').innerHTML=table(['','الملف','','ملاحظة','الحجم','بواسطة','التاريخ',''],fileRows(l,`()=>attach('${ref}','${esc(title).replace(/'/g,'')}')`),'لا توجد مرفقات')}catch(e){document.getElementById('atl').textContent=e.message}};
   let picked=[];const inp=document.getElementById('atf');
-  const doUp=async()=>{const fs=picked.length?picked:[...inp.files];if(!fs.length)return alert('اختار ملف الأول');const b=document.getElementById('atb');b.disabled=true;b.textContent='جاري الرفع...';
-    try{await uploadFiles(fs,ref,'مرفق',title);picked=[];inp.value=''}catch(e){alert(e.message)}b.disabled=false;b.textContent='⬆ رفع';load()};
-  const onPick=()=>{if(inp.files&&inp.files.length){picked=[...inp.files];doUp()}};
-  inp.addEventListener('change',onPick);inp.addEventListener('input',onPick);
+  const doUp=async()=>{if(document.getElementById('atb').disabled)return;const fs=picked.length?picked:[...inp.files];if(!fs.length){inp.click();return}const b=document.getElementById('atb');b.disabled=true;b.textContent='جاري الرفع...';
+    try{const k=await uploadFiles(fs,ref,'مرفق',title);picked=[];inp.value='';setStatus('✓ تم رفع '+k+' ملف','#a7f3d0')}catch(e){alert(e.message)}b.disabled=false;b.textContent='⬆ رفع';load()};
+  let busy=false;const onPick=async()=>{if(busy||!inp.files||!inp.files.length)return;busy=true;picked=[...inp.files];try{await doUp()}finally{busy=false}};
+  inp.addEventListener('change',onPick);
   document.getElementById('atb').onclick=doUp;
   load()}
 
